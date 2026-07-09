@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Game - Annual Habit Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#0b131a] text-slate-100 font-sans antialiased min-h-screen p-4 lg:p-8">
+
+    <div class="max-w-[1400px] mx-auto space-y-6">
+        
+        <header class="text-center py-6 border-b border-slate-800">
+            <span class="text-xs font-bold tracking-[0.3em] text-slate-400 uppercase block mb-1">Excel & Google Sheets</span>
+            <h1 class="text-4xl lg:text-5xl font-black tracking-wider text-[#0f3d32] dark:text-emerald-400">ANNUAL HABIT TRACKER</h1>
+            <p class="text-sm text-slate-400 mt-2 tracking-wide">Track your habits over 12 months</p>
+        </header>
+
+        <div class="bg-[#070d12] p-4 lg:p-6 rounded-2xl border border-slate-800 shadow-2xl grid grid-cols-1 xl:grid-cols-4 gap-6">
+            
+            <div class="xl:col-span-1 space-y-4">
+                <div class="bg-[#111c24] p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+                    <div class="border-b border-slate-700 pb-2">
+                        <h2 class="font-black text-center text-emerald-400 tracking-widest text-sm uppercase">Habit Tracker</h2>
+                        <p class="text-center text-slate-400 text-[10px] mt-0.5">- June -</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-[#172630] p-2 rounded border border-slate-700/50">
+                            <span class="text-slate-400 block text-[10px] uppercase">Year</span>
+                            <span class="font-bold text-white">2026</span>
+                        </div>
+                        <div class="bg-[#172630] p-2 rounded border border-slate-700/50">
+                            <span class="text-slate-400 block text-[10px] uppercase">Month</span>
+                            <span class="font-bold text-emerald-400">June</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#111c24] p-4 rounded-xl border border-slate-800 text-center space-y-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Overall Stats</span>
+                    
+                    <div class="grid grid-cols-3 gap-1.5 text-[10px] font-bold uppercase tracking-wide">
+                        <div class="bg-[#172630] p-1.5 rounded"><span class="text-slate-400 block">Goal</span><span class="text-xs font-black text-white" id="stat-goal">210</span></div>
+                        <div class="bg-[#172630] p-1.5 rounded"><span class="text-slate-400 block">Done</span><span class="text-xs font-black text-emerald-400" id="stat-completed">0</span></div>
+                        <div class="bg-[#172630] p-1.5 rounded"><span class="text-slate-400 block">Left</span><span class="text-xs font-black text-rose-400" id="stat-left">210</span></div>
+                    </div>
+
+                    <div class="w-24 h-24 mx-auto rounded-full border-[6px] border-slate-800 border-t-emerald-500 flex items-center justify-center shadow-lg">
+                        <span class="text-xl font-black text-white" id="overall-pct">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="xl:col-span-3 overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-[#111c24] text-[10px] font-bold text-slate-400 uppercase border border-slate-800">
+                            <th class="p-2 border-r border-slate-800 w-48 text-emerald-400">My Habits</th>
+                            <th colspan="31" class="p-2 text-center border-r border-slate-800 tracking-widest">Daily Progress (June 1 - 30)</th>
+                            <th class="p-2 text-center w-16">Analysis</th>
+                        </tr>
+                        <tr class="bg-[#16242f] text-[9px] font-bold text-slate-300 text-center border border-slate-800" id="days-header-row">
+                            <th class="p-2 text-left border-r border-slate-800 text-slate-400 font-medium">Habit Name</th>
+                            </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-xs border border-slate-800 bg-[#0d161d]" id="habit-table-body">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <footer class="text-center text-xs text-slate-500 pt-4 flex justify-between px-2">
+            <p>HABIT GAME © 2026 — Interactive Web Application</p>
+            <div class="space-x-4 font-bold tracking-widest text-[10px] text-slate-400 uppercase">
+                <span>PLAN BETTER</span> • <span>BUILD HABITS</span> • <span>ACHIEVE MORE</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // HALKAN KA BEDEL MAGACYADA JADWALKA KAALMAHA AAD RABTO (MY HABITS)
+        // Waxaad u beddeli kartaa af-Soomaali ama af-Ingiriis, astaanta icon-kana waa la baddali karaa.
+        const myHabitsConfig = [
+            { id: 'h1', name: 'Woke up at 05:00 ⏰', icon: 'text-amber-400' },
+            { id: 'h2', name: 'Gym & Fitness 💪', icon: 'text-emerald-400' },
+            { id: 'h3', name: 'Reading / Learning 📚', icon: 'text-blue-400' },
+            { id: 'h4', name: 'Day Planning 📝', icon: 'text-purple-400' },
+            { id: 'h5', name: 'No Social Media Detox 📵', icon: 'text-rose-400' },
+            { id: 'h6', name: 'Project Work 💻', icon: 'text-indigo-400' },
+            { id: 'h7', name: 'Goal Journaling 📓', icon: 'text-teal-400' }
+        ];
+
+        let habitStorage = JSON.parse(localStorage.getItem('perfect_tracker_data')) || {};
+
+        function buildTracker() {
+            const daysHeader = document.getElementById('days-header-row');
+            const tbody = document.getElementById('habit-table-body');
+            
+            // 1. Build Day Numbers Header (1 to 30)
+            for (let i = 1; i <= 30; i++) {
+                const th = document.createElement('th');
+                th.className = "p-1 border-r border-slate-800 w-6 font-black text-slate-400";
+                th.textContent = i;
+                daysHeader.appendChild(th);
+            }
+            // Append Analysis Header Column cell
+            const thAnalysis = document.createElement('th');
+            thAnalysis.className = "p-1 text-center text-[10px] text-slate-400";
+            thAnalysis.textContent = "%";
+            daysHeader.appendChild(thAnalysis);
+
+            // 2. Build Rows for each habit
+            myHabitsConfig.forEach(habit => {
+                let rowHtml = `<td class="p-2 border-r border-slate-800 font-semibold text-slate-300 text-[11px] truncate max-w-[180px]">${habit.name}</td>`;
+                let doneInHabit = 0;
+
+                for (let day = 1; day <= 30; day++) {
+                    const storageKey = `${habit.id}-d-${day}`;
+                    const isChecked = habitStorage[storageKey] ? 'checked' : '';
+                    if(habitStorage[storageKey]) doneInHabit++;
+
+                    rowHtml += `
+                        <td class="p-0 text-center border-r border-slate-800 bg-[#0a1117]">
+                            <label class="w-full h-full block p-1.5 cursor-pointer select-none">
+                                <input type="checkbox" 
+                                       data-habit="${habit.id}" 
+                                       data-day="${day}" 
+                                       class="habit-box-cell sr-only peer" ${isChecked}>
+                                <div class="w-3.5 h-3.5 mx-auto rounded bg-slate-900 border border-slate-700 peer-checked:bg-emerald-500 peer-checked:border-emerald-400 flex items-center justify-center transition-all">
+                                    <i class="fa-solid fa-check text-[8px] text-slate-950 font-black opacity-0 peer-checked:opacity-100"></i>
+                                </div>
+                            </label>
+                        </td>
+                    `;
+                }
+
+                const pct = Math.round((doneInHabit / 30) * 100);
+                rowHtml += `<td class="p-1 text-center font-black text-emerald-400 text-xs bg-[#111c24]/40" id="pct-${habit.id}">${pct}%</td>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[#14222d]/40 transition border-b border-slate-800";
+                tr.innerHTML = rowHtml;
+                tbody.appendChild(tr);
+            });
+
+            setupActions();
+            recalculateMetrics();
+        }
+
+        function recalculateMetrics() {
+            const allCheckboxes = document.querySelectorAll('.habit-box-cell');
+            const totalCount = allCheckboxes.length;
+            const checkedCount = document.querySelectorAll('.habit-box-cell:checked').length;
+            const leftCount = totalCount - checkedCount;
+            const totalPct = totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0;
+
+            // Update UI widgets
+            document.getElementById('stat-goal').textContent = totalCount;
+            document.getElementById('stat-completed').textContent = checkedCount;
+            document.getElementById('stat-left').textContent = leftCount;
+            document.getElementById('overall-pct').textContent = `${totalPct}%`;
+
+            // Row level updates
+            myHabitsConfig.forEach(habit => {
+                let checked = 0;
+                for(let d=1; d<=30; d++) {
+                    if(habitStorage[`${habit.id}-d-${d}`]) checked++;
+                }
+                const rowPct = Math.round((checked / 30) * 100);
+                document.getElementById(`pct-${habit.id}`).textContent = `${rowPct}%`;
+            });
+        }
+
+        function setupActions() {
+            document.querySelectorAll('.habit-box-cell').forEach(box => {
+                box.addEventListener('change', (e) => {
+                    const hId = e.target.getAttribute('data-habit');
+                    const dNum = e.target.getAttribute('data-day');
+                    const key = `${hId}-d-${dNum}`;
+
+                    if(e.target.checked) {
+                        habitStorage[key] = true;
+                    } else {
+                        delete habitStorage[key];
+                    }
+
+                    localStorage.setItem('perfect_tracker_data', JSON.stringify(habitStorage));
+                    recalculateMetrics();
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', buildTracker);
+    </script>
+</body>
+</html>
