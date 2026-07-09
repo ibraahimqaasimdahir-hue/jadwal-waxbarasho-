@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annual Ledger — Editable Timetable System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14213D;
+    --parchment:#F7F5F0;
+    --panel:#FFFDF8;
+    --emerald:#1F6F5C;
+    --emerald-dk:#154C40;
+    --gold:#C99A3C;
+    --rose:#A63446;
+    --slate:#5B6472;
+    --line:#DCD5C4;
+    --winter:#3E5C76;
+    --spring:#3F7D5C;
+    --summer:#C99A3C;
+    --autumn:#A63446;
+    --radius:2px;
+    --shadow: 0 1px 0 rgba(20,33,61,0.06), 0 8px 24px rgba(20,33,61,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--parchment);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(20,33,61,0.02) 0px, rgba(20,33,61,0.02) 1px, transparent 1px, transparent 42px);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .app{
+    max-width:1280px;
+    margin:0 auto;
+    padding:36px 28px 80px;
+  }
+
+  /* ---------- Header / Masthead ---------- */
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:28px;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  .masthead-left{display:flex; flex-direction:column; gap:6px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--emerald);
+    font-weight:500;
+  }
+  #docTitle{
+    font-family:'Fraunces', serif;
+    font-size:44px;
+    font-weight:600;
+    line-height:1.05;
+    color:var(--ink);
+    outline:none;
+    border-bottom:1px dashed transparent;
+    min-width:280px;
+  }
+  #docTitle:hover, #docTitle:focus{ border-bottom:1px dashed var(--gold); }
+  .yearRow{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--slate);
+    font-size:13px;
+  }
+  #yearField{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--slate);
+    outline:none;
+    border-bottom:1px dashed transparent;
+    width:48px;
+  }
+  #yearField:hover, #yearField:focus{ border-bottom:1px dashed var(--gold); }
+  .masthead-right{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    border:1px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    border-radius:var(--radius);
+    transition:all .15s ease;
+  }
+  .btn:hover{ background:var(--ink); color:var(--parchment); }
+  .btn.primary{ background:var(--emerald); border-color:var(--emerald); color:#fff; }
+  .btn.primary:hover{ background:var(--emerald-dk); border-color:var(--emerald-dk); }
+  .btn.ghost{ border-color:var(--line); color:var(--slate); }
+  .btn.ghost:hover{ background:var(--slate); border-color:var(--slate); color:#fff; }
+
+  /* ---------- Layout: ledger tabs + calendar ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:22px;
+  }
+
+  .tabs{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .tab{
+    position:relative;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.03em;
+    text-align:left;
+    padding:11px 10px 11px 16px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-right:none;
+    color:var(--slate);
+    cursor:pointer;
+    border-radius:var(--radius) 0 0 var(--radius);
+    transform:translateX(0);
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab .num{ opacity:.55; margin-right:6px; }
+  .tab::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:5px;
+    background:var(--season);
+    border-radius:var(--radius) 0 0 var(--radius);
+  }
+  .tab:hover{ transform:translateX(-4px); color:var(--ink); }
+  .tab.active{
+    background:var(--ink);
+    color:#fff;
+    transform:translateX(-8px);
+    border-color:var(--ink);
+    box-shadow:var(--shadow);
+    font-weight:600;
+  }
+  .tab.active::before{ width:5px; }
+
+  .calendarWrap{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:24px 26px 26px;
+    min-height:560px;
+  }
+
+  .calHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .calHead h2{
+    font-family:'Fraunces', serif;
+    font-size:26px;
+    font-weight:600;
+    margin:0;
+    color:var(--ink);
+  }
+  .calHead .season-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#fff;
+    background:var(--season);
+    padding:5px 10px;
+    border-radius:20px;
+    margin-left:12px;
+  }
+  .legend{
+    display:flex;
+    gap:14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--slate);
+  }
+  .legend span{ display:flex; align-items:center; gap:5px; }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:6px;
+  }
+  .dow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--slate);
+    text-align:center;
+    padding-bottom:6px;
+  }
+  .day{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    min-height:104px;
+    padding:6px 7px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    position:relative;
+    transition:box-shadow .15s ease;
+  }
+  .day.empty{ background:transparent; border:1px dashed transparent; }
+  .day.weekend{ background:#FAF7F0; }
+  .day:hover{ box-shadow:0 0 0 2px var(--gold) inset; }
+  .day .dnum{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--slate);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .day.today .dnum{ color:var(--emerald); font-weight:700; }
+  .day .addBtn{
+    font-size:13px;
+    color:var(--slate);
+    cursor:pointer;
+    opacity:.4;
+    line-height:1;
+    padding:0 2px;
+  }
+  .day .addBtn:hover{ opacity:1; color:var(--emerald); }
+  .entries{ display:flex; flex-direction:column; gap:3px; overflow-y:auto; max-height:70px; }
+  .entry{
+    font-size:11px;
+    line-height:1.3;
+    padding:3px 5px;
+    border-radius:2px;
+    border-left:3px solid var(--type-color);
+    background:color-mix(in srgb, var(--type-color) 12%, white);
+    color:var(--ink);
+    outline:none;
+    cursor:text;
+    position:relative;
+  }
+  .entry:focus{ box-shadow:0 0 0 1px var(--type-color); }
+  .entry .rm{
+    position:absolute;
+    right:3px; top:2px;
+    font-size:9px;
+    color:var(--slate);
+    cursor:pointer;
+    opacity:0;
+  }
+  .entry:hover .rm{ opacity:.7; }
+
+  /* type picker popover */
+  .typePicker{
+    position:absolute;
+    z-index:20;
+    background:var(--ink);
+    border-radius:4px;
+    padding:5px;
+    display:flex;
+    gap:5px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+    top:24px; right:4px;
+  }
+  .typePicker .sw{
+    width:16px; height:16px; border-radius:50%;
+    cursor:pointer;
+    border:2px solid rgba(255,255,255,.3);
+  }
+  .typePicker .sw:hover{ border-color:#fff; }
+
+  footer.note{
+    margin-top:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--slate);
+    text-align:center;
+  }
+
+  @media (max-width: 860px){
+    .layout{ grid-template-columns:1fr; }
+    .tabs{ flex-direction:row; flex-wrap:wrap; }
+    .tab{ border-radius:var(--radius); border-right:1px solid var(--line); }
+    .tab::before{ display:none; }
+  }
+  @media print{
+    .masthead-right, .tabs, .btn, .addBtn, .legend{ display:none !important; }
+    body{ background:#fff; }
+    .calendarWrap{ box-shadow:none; border:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <div class="eyebrow">Annual Ledger · Editable Timetable System</div>
+      <div id="docTitle" contenteditable="true" spellcheck="false">Al-Qalam Academic Calendar</div>
+      <div class="yearRow">Year&nbsp;
+        <span id="yearField" contenteditable="true" spellcheck="false">2026</span>
+        &nbsp;· click any date to add an entry · click a tab to change month
+      </div>
+    </div>
+    <div class="masthead-right">
+      <button class="btn ghost" onclick="clearMonth()">Clear month</button>
+      <button class="btn" onclick="window.print()">Print / Export</button>
+      <button class="btn primary" onclick="saveState()">Save</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="tabs" id="tabs"></div>
+
+    <div class="calendarWrap">
+      <div class="calHead">
+        <div style="display:flex; align-items:center;">
+          <h2 id="monthTitle">June</h2>
+          <span class="season-tag" id="seasonTag">Summer</span>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:#1F6F5C"></i>Class</span>
+          <span><i class="dot" style="background:#C99A3C"></i>Exam</span>
+          <span><i class="dot" style="background:#A63446"></i>Holiday</span>
+          <span><i class="dot" style="background:#3E5C76"></i>Event</span>
+        </div>
+      </div>
+      <div class="grid" id="dowRow"></div>
+      <div class="grid" id="calGrid" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <footer class="note">Data is saved automatically to this browser · entries are fully editable, addable, and removable</footer>
+</div>
+
+<script>
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SEASON = {
+  0:{name:"Winter",color:"var(--winter)"},1:{name:"Winter",color:"var(--winter)"},
+  2:{name:"Spring",color:"var(--spring)"},3:{name:"Spring",color:"var(--spring)"},4:{name:"Spring",color:"var(--spring)"},
+  5:{name:"Summer",color:"var(--summer)"},6:{name:"Summer",color:"var(--summer)"},7:{name:"Summer",color:"var(--summer)"},
+  8:{name:"Autumn",color:"var(--autumn)"},9:{name:"Autumn",color:"var(--autumn)"},10:{name:"Autumn",color:"var(--autumn)"},
+  11:{name:"Winter",color:"var(--winter)"}
+};
+const TYPE_COLORS = { class:"#1F6F5C", exam:"#C99A3C", holiday:"#A63446", event:"#3E5C76" };
+const DOW = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+let state = {
+  title:"Al-Qalam Academic Calendar",
+  year:2026,
+  activeMonth:5, // June
+  entries:{} // "YYYY-MM-DD": [{text, type}]
+};
+
+function loadState(){
+  try{
+    const saved = localStorage.getItem("annualLedgerState");
+    if(saved){ state = Object.assign(state, JSON.parse(saved)); }
+  }catch(e){}
+}
+function saveState(){
+  try{
+    localStorage.setItem("annualLedgerState", JSON.stringify(state));
+    flashSaved();
+  }catch(e){}
+}
+function flashSaved(){
+  const btn = document.querySelector('.btn.primary');
+  const old = btn.textContent;
+  btn.textContent = "Saved ✓";
+  setTimeout(()=>btn.textContent=old, 900);
+}
+
+function buildTabs(){
+  const wrap = document.getElementById('tabs');
+  wrap.innerHTML = "";
+  MONTHS.forEach((m,i)=>{
+    const t = document.createElement('div');
+    t.className = 'tab' + (i===state.activeMonth ? ' active':'');
+    t.style.setProperty('--season', SEASON[i].color);
+    t.innerHTML = `<span class="num">${String(i+1).padStart(2,'0')}</span>${m}`;
+    t.onclick = ()=>{ state.activeMonth = i; render(); };
+    wrap.appendChild(t);
+  });
+}
+
+function buildDow(){
+  const row = document.getElementById('dowRow');
+  row.innerHTML = DOW.map(d=>`<div class="dow">${d}</div>`).join("");
+}
+
+function key(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function renderCalendar(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = "";
+  const y = state.year, m = state.activeMonth;
+  const firstDow = (new Date(y,m,1).getDay()+6)%7; // Monday=0
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  for(let i=0;i<firstDow;i++){
+    const empty = document.createElement('div');
+    empty.className = 'day empty';
+    grid.appendChild(empty);
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const dowIdx = (firstDow + d - 1) % 7;
+    const isWeekend = dowIdx >= 5;
+    const k = key(y,m,d);
+    const isToday = k === todayStr;
+
+    const cell = document.createElement('div');
+    cell.className = 'day' + (isWeekend?' weekend':'') + (isToday?' today':'');
+
+    const numRow = document.createElement('div');
+    numRow.className = 'dnum';
+    numRow.innerHTML = `<span>${d}</span><span class="addBtn" title="Add entry">+</span>`;
+    numRow.querySelector('.addBtn').onclick = ()=> addEntry(k, cell);
+    cell.appendChild(numRow);
+
+    const entriesWrap = document.createElement('div');
+    entriesWrap.className = 'entries';
+    entriesWrap.id = `entries-${k}`;
+    cell.appendChild(entriesWrap);
+
+    grid.appendChild(cell);
+    renderEntries(k);
+  }
+}
+
+function renderEntries(k){
+  const wrap = document.getElementById(`entries-${k}`);
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  const list = state.entries[k] || [];
+  list.forEach((item, idx)=>{
+    const e = document.createElement('div');
+    e.className = 'entry';
+    e.style.setProperty('--type-color', TYPE_COLORS[item.type] || TYPE_COLORS.event);
+    e.contentEditable = true;
+    e.spellcheck = false;
+    e.textContent = item.text;
+    e.oninput = ()=>{ state.entries[k][idx].text = e.textContent; };
+    e.onblur = saveState;
+
+    const rm = document.createElement('span');
+    rm.className = 'rm';
+    rm.textContent = '✕';
+    rm.onclick = (ev)=>{ ev.stopPropagation(); list.splice(idx,1); renderEntries(k); saveState(); };
+    e.appendChild(rm);
+
+    e.oncontextmenu = (ev)=>{
+      ev.preventDefault();
+      openTypePicker(e, k, idx);
+    };
+
+    wrap.appendChild(e);
+  });
+}
+
+function openTypePicker(anchor, k, idx){
+  document.querySelectorAll('.typePicker').forEach(p=>p.remove());
+  const picker = document.createElement('div');
+  picker.className = 'typePicker';
+  Object.entries(TYPE_COLORS).forEach(([type,color])=>{
+    const sw = document.createElement('div');
+    sw.className = 'sw';
+    sw.style.background = color;
+    sw.title = type;
+    sw.onclick = ()=>{
+      state.entries[k][idx].type = type;
+      renderEntries(k);
+      saveState();
+    };
+    picker.appendChild(sw);
+  });
+  anchor.appendChild(picker);
+  setTimeout(()=>{
+    document.addEventListener('click', function h(ev){
+      if(!picker.contains(ev.target)){ picker.remove(); document.removeEventListener('click',h); }
+    });
+  },0);
+}
+
+function addEntry(k, cell){
+  if(!state.entries[k]) state.entries[k] = [];
+  state.entries[k].push({text:"New entry", type:"class"});
+  renderEntries(k);
+  saveState();
+  const wrap = document.getElementById(`entries-${k}`);
+  const last = wrap.lastElementChild;
+  if(last){
+    const range = document.createRange();
+    range.selectNodeContents(last);
+    const sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    last.focus();
+  }
+}
+
+function clearMonth(){
+  if(!confirm(`Clear all entries for ${MONTHS[state.activeMonth]} ${state.year}?`)) return;
+  Object.keys(state.entries).forEach(k=>{
+    if(k.startsWith(`${state.year}-${String(state.activeMonth+1).padStart(2,'0')}`)){
+      delete state.entries[k];
+    }
+  });
+  render();
+  saveState();
+}
+
+function render(){
+  document.getElementById('monthTitle').textContent = MONTHS[state.activeMonth];
+  const s = SEASON[state.activeMonth];
+  const tag = document.getElementById('seasonTag');
+  tag.textContent = s.name;
+  tag.style.background = s.color;
+  buildTabs();
+  buildDow();
+  renderCalendar();
+}
+
+// title / year editable bindings
+document.getElementById('docTitle').addEventListener('input', (e)=>{ state.title = e.target.textContent; });
+document.getElementById('docTitle').addEventListener('blur', saveState);
+document.getElementById('yearField').addEventListener('input', (e)=>{
+  const val = parseInt(e.target.textContent.replace(/\D/g,'')) || state.year;
+  state.year = val;
+});
+document.getElementById('yearField').addEventListener('blur', ()=>{ render(); saveState(); });
+
+loadState();
+document.getElementById('docTitle').textContent = state.title;
+document.getElementById('yearField').textContent = state.year;
+render();
+</script>
+</body>
+</html>
